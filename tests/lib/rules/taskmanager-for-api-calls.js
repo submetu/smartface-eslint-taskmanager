@@ -37,7 +37,9 @@ ruleTester.run("taskmanager-for-api-calls", rule, {
     `serviceDispatch().then()`,
     `serviceDispatch({}).then()`,
     `serviceDispatch({test:1}).then()`,
-    `serviceDispatch(test).then()`
+    `serviceDispatch(test).then()`,
+    "createApiTask(()=> {return serviceDispatch({method:\"PATCH\",endpoint:`testing-distribution/v1/profiles/${profileID}/app-versions/${appID}`,data:JSON.stringify({versionTags:tags.map(a=>a.text)||[]}),headers:{\"Content-Type\":\"application/json\"}})});",
+    "createApiTask(()=> serviceDispatch({method:\"PATCH\",endpoint:`testing-distribution/v1/profiles/${profileID}/app-versions/${appID}`,data:JSON.stringify({versionTags:tags.map(a=>a.text)||[]}),headers:{\"Content-Type\":\"application/json\"}}));",
   ],
 
   invalid: [
@@ -64,6 +66,18 @@ ruleTester.run("taskmanager-for-api-calls", rule, {
     {
       code: `serviceDispatch({method}).then()`,
       errors: getErrors("MemberExpression")
+    },
+    {
+        code:`var createApiTask = ()=> serviceDispatch({method:"GET",endpoint:"x"})`,
+        errors: getErrors("Identifier")
+    },
+    {
+        code: "randomFunction(()=> {return serviceDispatch({method:\"PATCH\",endpoint:`testing-distribution/v1/profiles/${profileID}/app-versions/${appID}`,data:JSON.stringify({versionTags:tags.map(a=>a.text)||[]}),headers:{\"Content-Type\":\"application/json\"}})});",
+        errors: getErrors("ReturnStatement")
+    },
+    {
+        code: "randomFunction(()=>serviceDispatch({method:\"PATCH\",endpoint:`testing-distribution/v1/profiles/${profileID}/app-versions/${appID}`,data:JSON.stringify({versionTags:tags.map(a=>a.text)||[]}),headers:{\"Content-Type\":\"application/json\"}}));",
+        errors: getErrors("Identifier")
     }
   ]
 });
